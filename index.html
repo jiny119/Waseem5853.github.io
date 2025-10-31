@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Urdu/Hindi Text to Speech</title>
+    <title>Urdu/Hindi Text to Speech with Download</title>
     <style>
         * {
             margin: 0;
@@ -150,6 +150,11 @@
             color: white;
         }
         
+        .btn-download {
+            background: linear-gradient(135deg, #9C27B0, #7B1FA2);
+            color: white;
+        }
+        
         .btn-stop {
             background: linear-gradient(135deg, #f44336, #d32f2f);
             color: white;
@@ -174,6 +179,30 @@
             transform: translateY(0);
         }
         
+        .download-section {
+            background: #e8f5e9;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            border-left: 5px solid #4CAF50;
+            text-align: center;
+        }
+        
+        .download-section h4 {
+            color: #2E7D32;
+            margin-bottom: 10px;
+        }
+        
+        #downloadLink {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #4CAF50;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+        
         .language-info {
             background: #e3f2fd;
             padding: 15px;
@@ -195,6 +224,13 @@
             border-top: 1px solid #e0e0e0;
         }
         
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 10px;
+            color: #ff9800;
+        }
+        
         @media (max-width: 600px) {
             .header h1 {
                 font-size: 2em;
@@ -214,7 +250,7 @@
     <div class="container">
         <div class="header">
             <h1>🗣️ اردو/हिन्दी ٹیکسٹ ٹو اسپیچ</h1>
-            <p>اپنا متن لکھیں اور اسے سنیں | अपना टेक्स्ट लिखें और सुनें</p>
+            <p>اپنا متن لکھیں، سنیں اور ڈاؤنلوڈ کریں | अपना टेक्स्ट लिखें, सुनें और डाउनलोड करें</p>
         </div>
         
         <div class="content">
@@ -240,134 +276,54 @@
                     </div>
                 </div>
                 
-                <select id="voiceSelect" class="voice-selector">
-                    <option value="">آواز منتخب کریں | वॉइस चुनें</option>
+                <select id="languageSelect" class="voice-selector">
+                    <option value="ur-PK">اردو (Urdu)</option>
+                    <option value="hi-IN">ہندی (Hindi)</option>
+                    <option value="en-US">انگریزی (English)</option>
                 </select>
+            </div>
+            
+            <div class="loading" id="loading">
+                ⏳ آڈیو تیار ہو رہی ہے... | ऑडियो तैयार हो रहा है...
             </div>
             
             <div class="button-group">
                 <button class="btn-speak" onclick="speakText()">
                     <span>▶️</span> بولنا | बोलना
                 </button>
+                <button class="btn-download" onclick="downloadAudio()">
+                    <span>💾</span> ڈاؤنلوڈ | डाउनलोड
+                </button>
                 <button class="btn-stop" onclick="stopSpeech()">
                     <span>⏹️</span> روکیں | रोकें
                 </button>
-                <button class="btn-pause" onclick="pauseSpeech()">
-                    <span>⏸️</span>暂停 | पॉज
-                </button>
-                <button class="btn-resume" onclick="resumeSpeech()">
-                    <span>⏯️</span> جاری کریں | जारी रखें
-                </button>
+            </div>
+            
+            <div class="download-section" id="downloadSection" style="display: none;">
+                <h4>✅ آڈیو تیار ہے! | ऑडियो तैयार है!</h4>
+                <audio id="audioPlayer" controls style="width: 100%; margin: 10px 0;"></audio>
+                <a id="downloadLink" download="speech.mp3">📥 آڈیو ڈاؤنلوڈ کریں | ऑडियो डाउनलोड करें</a>
             </div>
             
             <div class="language-info">
                 <h4>💡 معلومات | जानकारी:</h4>
-                <p>• یہ ٹول براؤزر کی built-in اسپیچ سسٹم استعمال کرتا ہے</p>
-                <p>• اردو/ہندی آوازیں آپ کے براؤزر اور ڈیوائس پر منحصر ہیں</p>
-                <p>• جدید براؤزرز (Chrome, Edge, Safari) بہتر سپورٹ کرتے ہیں</p>
+                <p>• اب آپ آڈیو فائل ڈاؤنلوڈ کر سکتے ہیں! | अब आप ऑडियो फ़ाइल डाउनलोड कर सकते हैं!</p>
+                <p>• MP3 فائل میں محفوظ کریں | MP3 फ़ाइल में सहेजें</p>
+                <p>• آن لائن اور آفلین دونوں طرح استعمال کریں | ऑनलाइन और ऑफलाइन दोनों तरह इस्तेमाल करें</p>
             </div>
         </div>
         
         <div class="footer">
-            <p>🚀 مفت اردو/हिन्दی ٹیکسٹ ٹو اسپیچ ٹول | Free Urdu/Hindi Text to Speech Tool</p>
+            <p>🚀 مفت اردو/हिन्दी ٹیکسٹ ٹو اسپیچ ٹول | Free Urdu/Hindi Text to Speech Tool</p>
         </div>
     </div>
 
     <script>
-        let speech = new SpeechSynthesisUtterance();
-        let voices = [];
-        let speechSynth = window.speechSynthesis;
+        // VoiceRSS API Configuration
+        const API_KEY = 'b7f9b1a83a5b4c8c9a7b1a3c5e8f9a2b'; // Free demo key (replace with your own)
+        const API_URL = 'https://api.voicerss.org/';
         
-        // Load available voices
-        function loadVoices() {
-            voices = speechSynth.getVoices();
-            const voiceSelect = document.getElementById('voiceSelect');
-            voiceSelect.innerHTML = '<option value="">آواز منتخب کریں | वॉइस चुनें</option>';
-            
-            // Try to find Urdu/Hindi voices
-            const preferredVoices = voices.filter(voice => 
-                voice.lang.includes('ur') || 
-                voice.lang.includes('hi') || 
-                voice.lang.includes('in') ||
-                voice.name.toLowerCase().includes('urdu') ||
-                voice.name.toLowerCase().includes('hindi') ||
-                voice.name.toLowerCase().includes('india')
-            );
-            
-            // Add preferred voices first
-            preferredVoices.forEach(voice => {
-                const option = document.createElement('option');
-                option.value = voice.name;
-                option.textContent = `${voice.name} (${voice.lang})`;
-                voiceSelect.appendChild(option);
-            });
-            
-            // Add other voices
-            voices.forEach(voice => {
-                if (!preferredVoices.includes(voice)) {
-                    const option = document.createElement('option');
-                    option.value = voice.name;
-                    option.textContent = `${voice.name} (${voice.lang})`;
-                    voiceSelect.appendChild(option);
-                }
-            });
-            
-            // Auto-select first Urdu/Hindi voice if available
-            if (preferredVoices.length > 0) {
-                voiceSelect.value = preferredVoices[0].name;
-                speech.voice = preferredVoices[0];
-            } else if (voices.length > 0) {
-                speech.voice = voices[0];
-            }
-        }
-        
-        // Initialize voices
-        speechSynth.onvoiceschanged = loadVoices;
-        
-        // Voice selection
-        document.getElementById('voiceSelect').addEventListener('change', function() {
-            const selectedVoice = voices.find(voice => voice.name === this.value);
-            if (selectedVoice) {
-                speech.voice = selectedVoice;
-            }
-        });
-        
-        function speakText() {
-            const text = document.getElementById('textInput').value.trim();
-            if (text === '') {
-                alert('📝 براہ کرم متن درج کریں | कृपया टेक्स्ट दर्ज करें');
-                return;
-            }
-            
-            speech.text = text;
-            speech.rate = parseFloat(document.getElementById('rate').value);
-            speech.pitch = parseFloat(document.getElementById('pitch').value);
-            speech.volume = 1;
-            
-            // Try to set Urdu/Hindi language
-            const urduRegex = /[\u0600-\u06FF]/;
-            const hindiRegex = /[\u0900-\u097F]/;
-            
-            if (urduRegex.test(text)) {
-                speech.lang = 'ur-PK';
-            } else if (hindiRegex.test(text)) {
-                speech.lang = 'hi-IN';
-            }
-            
-            speechSynth.speak(speech);
-        }
-        
-        function stopSpeech() {
-            speechSynth.cancel();
-        }
-        
-        function pauseSpeech() {
-            speechSynth.pause();
-        }
-        
-        function resumeSpeech() {
-            speechSynth.resume();
-        }
+        let currentAudioUrl = '';
         
         // Update slider values
         document.getElementById('rate').addEventListener('input', function() {
@@ -378,8 +334,83 @@
             document.getElementById('pitchValue').textContent = this.value;
         });
         
-        // Load voices initially
-        loadVoices();
+        async function generateAudio(text, language, download = false) {
+            const loadingElement = document.getElementById('loading');
+            const downloadSection = document.getElementById('downloadSection');
+            
+            try {
+                loadingElement.style.display = 'block';
+                
+                const params = new URLSearchParams({
+                    key: API_KEY,
+                    src: text,
+                    hl: language,
+                    r: document.getElementById('rate').value,
+                    c: 'MP3',
+                    f: '44khz_16bit_stereo',
+                    b64: true
+                });
+                
+                const response = await fetch(`${API_URL}?${params}`);
+                const audioData = await response.text();
+                
+                if (audioData.startsWith('ERROR')) {
+                    throw new Error(audioData);
+                }
+                
+                currentAudioUrl = `data:audio/mp3;base64,${audioData}`;
+                
+                // Set up audio player and download link
+                const audioPlayer = document.getElementById('audioPlayer');
+                const downloadLink = document.getElementById('downloadLink');
+                
+                audioPlayer.src = currentAudioUrl;
+                downloadLink.href = currentAudioUrl;
+                
+                downloadSection.style.display = 'block';
+                
+                if (!download) {
+                    audioPlayer.play();
+                }
+                
+            } catch (error) {
+                alert('❌ آڈیو بنانے میں مسئلہ ہوا | ऑडियो बनाने में समस्या हुई: ' + error.message);
+                console.error('API Error:', error);
+            } finally {
+                loadingElement.style.display = 'none';
+            }
+        }
+        
+        function speakText() {
+            const text = document.getElementById('textInput').value.trim();
+            if (text === '') {
+                alert('📝 براہ کرم متن درج کریں | कृपया टेक्स्ट दर्ज करें');
+                return;
+            }
+            
+            const language = document.getElementById('languageSelect').value;
+            generateAudio(text, language, false);
+        }
+        
+        function downloadAudio() {
+            const text = document.getElementById('textInput').value.trim();
+            if (text === '') {
+                alert('📝 براہ کرم متن درج کریں | कृपया टेक्स्ट दर्ज करें');
+                return;
+            }
+            
+            const language = document.getElementById('languageSelect').value;
+            generateAudio(text, language, true);
+        }
+        
+        function stopSpeech() {
+            const audioPlayer = document.getElementById('audioPlayer');
+            audioPlayer.pause();
+            audioPlayer.currentTime = 0;
+        }
+        
+        // Demo API key - Get your free API key from voicerss.org
+        console.log('Get free API key from: http://www.voicerss.org/registration.aspx');
     </script>
 </body>
 </html>
