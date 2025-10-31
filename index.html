@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Urdu/Hindi Text to Speech with Download</title>
+    <title>Free Urdu/Hindi Text to Speech with Download</title>
     <style>
         * {
             margin: 0;
@@ -150,7 +150,7 @@
             color: white;
         }
         
-        .btn-download {
+        .btn-record {
             background: linear-gradient(135deg, #9C27B0, #7B1FA2);
             color: white;
         }
@@ -160,23 +160,9 @@
             color: white;
         }
         
-        .btn-pause {
-            background: linear-gradient(135deg, #ff9800, #f57c00);
-            color: white;
-        }
-        
-        .btn-resume {
-            background: linear-gradient(135deg, #2196F3, #1976D2);
-            color: white;
-        }
-        
         button:hover {
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        }
-        
-        button:active {
-            transform: translateY(0);
         }
         
         .download-section {
@@ -186,33 +172,11 @@
             margin-top: 20px;
             border-left: 5px solid #4CAF50;
             text-align: center;
+            display: none;
         }
         
         .download-section h4 {
             color: #2E7D32;
-            margin-bottom: 10px;
-        }
-        
-        #downloadLink {
-            display: inline-block;
-            padding: 10px 20px;
-            background: #4CAF50;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-            margin-top: 10px;
-        }
-        
-        .language-info {
-            background: #e3f2fd;
-            padding: 15px;
-            border-radius: 10px;
-            margin-top: 20px;
-            border-left: 5px solid #2196F3;
-        }
-        
-        .language-info h4 {
-            color: #1976D2;
             margin-bottom: 10px;
         }
         
@@ -224,11 +188,22 @@
             border-top: 1px solid #e0e0e0;
         }
         
-        .loading {
-            display: none;
+        .status {
             text-align: center;
             padding: 10px;
-            color: #ff9800;
+            margin: 10px 0;
+            border-radius: 5px;
+            display: none;
+        }
+        
+        .recording {
+            background: #fff3e0;
+            color: #e65100;
+        }
+        
+        .ready {
+            background: #e8f5e9;
+            color: #2e7d32;
         }
         
         @media (max-width: 600px) {
@@ -283,33 +258,31 @@
                 </select>
             </div>
             
-            <div class="loading" id="loading">
-                ⏳ آڈیو تیار ہو رہی ہے... | ऑडियो तैयार हो रहा है...
-            </div>
+            <div id="status" class="status"></div>
             
             <div class="button-group">
                 <button class="btn-speak" onclick="speakText()">
                     <span>▶️</span> بولنا | बोलना
                 </button>
-                <button class="btn-download" onclick="downloadAudio()">
-                    <span>💾</span> ڈاؤنلوڈ | डाउनलोड
-                </button>
-                <button class="btn-stop" onclick="stopSpeech()">
-                    <span>⏹️</span> روکیں | रोकें
+                <button class="btn-record" id="recordBtn" onclick="toggleRecording()">
+                    <span>⏺️</span> ریکارڈ کریں | रिकॉर्ड करें
                 </button>
             </div>
             
-            <div class="download-section" id="downloadSection" style="display: none;">
+            <div class="download-section" id="downloadSection">
                 <h4>✅ آڈیو تیار ہے! | ऑडियो तैयार है!</h4>
-                <audio id="audioPlayer" controls style="width: 100%; margin: 10px 0;"></audio>
-                <a id="downloadLink" download="speech.mp3">📥 آڈیو ڈاؤنلوڈ کریں | ऑडियो डाउनलोड करें</a>
+                <audio id="recordedAudio" controls style="width: 100%; margin: 10px 0;"></audio>
+                <br>
+                <button onclick="downloadAudio()" style="background: #4CAF50; color: white; padding: 12px 24px; border: none; border-radius: 8px; margin: 10px;">
+                    <span>💾</span> آڈیو ڈاؤنلوڈ کریں | ऑडियो डाउनलोड करें
+                </button>
             </div>
             
-            <div class="language-info">
-                <h4>💡 معلومات | जानकारी:</h4>
-                <p>• اب آپ آڈیو فائل ڈاؤنلوڈ کر سکتے ہیں! | अब आप ऑडियो फ़ाइल डाउनलोड कर सकते हैं!</p>
-                <p>• MP3 فائل میں محفوظ کریں | MP3 फ़ाइल में सहेजें</p>
-                <p>• آن لائن اور آفلین دونوں طرح استعمال کریں | ऑनलाइन और ऑफलाइन दोनों तरह इस्तेमाल करें</p>
+            <div class="language-info" style="background: #e3f2fd; padding: 15px; border-radius: 10px; margin-top: 20px;">
+                <h4>💡 ہدایات | निर्देश:</h4>
+                <p>1. متن لکھیں اور "بولنا" بٹن دبائیں</p>
+                <p>2. "ریکارڈ کریں" بٹن دبائیں - یہ آواز ریکارڈ کرے گا</p>
+                <p>3. آڈیو ڈاؤنلوڈ کرنے کے لیے ڈاؤنلوڈ بٹن استعمال کریں</p>
             </div>
         </div>
         
@@ -319,12 +292,11 @@
     </div>
 
     <script>
-        // VoiceRSS API Configuration
-        const API_KEY = 'b7f9b1a83a5b4c8c9a7b1a3c5e8f9a2b'; // Free demo key (replace with your own)
-        const API_URL = 'https://api.voicerss.org/';
-        
-        let currentAudioUrl = '';
-        
+        let mediaRecorder;
+        let audioChunks = [];
+        let isRecording = false;
+        let recordedAudioUrl = null;
+
         // Update slider values
         document.getElementById('rate').addEventListener('input', function() {
             document.getElementById('rateValue').textContent = this.value;
@@ -333,84 +305,122 @@
         document.getElementById('pitch').addEventListener('input', function() {
             document.getElementById('pitchValue').textContent = this.value;
         });
-        
-        async function generateAudio(text, language, download = false) {
-            const loadingElement = document.getElementById('loading');
-            const downloadSection = document.getElementById('downloadSection');
-            
-            try {
-                loadingElement.style.display = 'block';
-                
-                const params = new URLSearchParams({
-                    key: API_KEY,
-                    src: text,
-                    hl: language,
-                    r: document.getElementById('rate').value,
-                    c: 'MP3',
-                    f: '44khz_16bit_stereo',
-                    b64: true
-                });
-                
-                const response = await fetch(`${API_URL}?${params}`);
-                const audioData = await response.text();
-                
-                if (audioData.startsWith('ERROR')) {
-                    throw new Error(audioData);
-                }
-                
-                currentAudioUrl = `data:audio/mp3;base64,${audioData}`;
-                
-                // Set up audio player and download link
-                const audioPlayer = document.getElementById('audioPlayer');
-                const downloadLink = document.getElementById('downloadLink');
-                
-                audioPlayer.src = currentAudioUrl;
-                downloadLink.href = currentAudioUrl;
-                
-                downloadSection.style.display = 'block';
-                
-                if (!download) {
-                    audioPlayer.play();
-                }
-                
-            } catch (error) {
-                alert('❌ آڈیو بنانے میں مسئلہ ہوا | ऑडियो बनाने में समस्या हुई: ' + error.message);
-                console.error('API Error:', error);
-            } finally {
-                loadingElement.style.display = 'none';
-            }
-        }
-        
+
+        // Browser built-in speech
         function speakText() {
             const text = document.getElementById('textInput').value.trim();
             if (text === '') {
                 alert('📝 براہ کرم متن درج کریں | कृपया टेक्स्ट दर्ज करें');
                 return;
             }
+
+            const speech = new SpeechSynthesisUtterance();
+            speech.text = text;
+            speech.rate = parseFloat(document.getElementById('rate').value);
+            speech.pitch = parseFloat(document.getElementById('pitch').value);
+            speech.lang = document.getElementById('languageSelect').value;
             
-            const language = document.getElementById('languageSelect').value;
-            generateAudio(text, language, false);
+            window.speechSynthesis.speak(speech);
         }
-        
-        function downloadAudio() {
+
+        // Audio recording function
+        async function toggleRecording() {
             const text = document.getElementById('textInput').value.trim();
             if (text === '') {
-                alert('📝 براہ کرم متن درج کریں | कृपया टेक्स्ट दर्ज करें');
+                alert('📝 پہلے متن درج کریں | पहले टेक्स्ट दर्ज करें');
                 return;
             }
-            
-            const language = document.getElementById('languageSelect').value;
-            generateAudio(text, language, true);
+
+            if (!isRecording) {
+                // Start recording
+                try {
+                    showStatus('⏺️ ریکارڈنگ شروع ہو رہی ہے... | रिकॉर्डिंग शुरू हो रही है...', 'recording');
+                    
+                    const stream = await navigator.mediaDevices.getUserMedia({ 
+                        audio: {
+                            echoCancellation: true,
+                            noiseSuppression: true,
+                            sampleRate: 44100
+                        } 
+                    });
+                    
+                    mediaRecorder = new MediaRecorder(stream, {
+                        mimeType: 'audio/webm;codecs=opus'
+                    });
+                    
+                    audioChunks = [];
+
+                    mediaRecorder.ondataavailable = (event) => {
+                        if (event.data.size > 0) {
+                            audioChunks.push(event.data);
+                        }
+                    };
+
+                    mediaRecorder.onstop = () => {
+                        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                        
+                        // Convert to WAV for better compatibility
+                        recordedAudioUrl = URL.createObjectURL(audioBlob);
+                        
+                        const audioElement = document.getElementById('recordedAudio');
+                        audioElement.src = recordedAudioUrl;
+                        
+                        document.getElementById('downloadSection').style.display = 'block';
+                        showStatus('✅ آڈیو تیار ہے! ڈاؤنلوڈ کریں | ऑडियो तैयार है! डाउनलोड करें', 'ready');
+                        
+                        // Stop all tracks
+                        stream.getTracks().forEach(track => track.stop());
+                    };
+
+                    mediaRecorder.start();
+                    isRecording = true;
+                    document.getElementById('recordBtn').innerHTML = '<span>⏹️</span> ریکارڈنگ روکیں | रिकॉर्डिंग रोकें';
+                    document.getElementById('recordBtn').className = 'btn-stop';
+                    
+                    showStatus('🎤 ریکارڈنگ جاری ہے... بولنا شروع کریں | रिकॉर्डिंग चल रही है... बोलना शुरू करें', 'recording');
+                    
+                    // Auto start speaking
+                    setTimeout(() => {
+                        speakText();
+                    }, 1000);
+                    
+                } catch (error) {
+                    console.error('Recording error:', error);
+                    showStatus('❌ مائیکروفون کی اجازت درکار ہے | माइक्रोफोन अनुमति आवश्यक', 'recording');
+                }
+            } else {
+                // Stop recording
+                if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                    mediaRecorder.stop();
+                    isRecording = false;
+                    document.getElementById('recordBtn').innerHTML = '<span>⏺️</span> ریکارڈ کریں | रिकॉर्ड करें';
+                    document.getElementById('recordBtn').className = 'btn-record';
+                }
+            }
         }
-        
-        function stopSpeech() {
-            const audioPlayer = document.getElementById('audioPlayer');
-            audioPlayer.pause();
-            audioPlayer.currentTime = 0;
+
+        function downloadAudio() {
+            if (recordedAudioUrl) {
+                const a = document.createElement('a');
+                a.href = recordedAudioUrl;
+                a.download = `urdu_hindi_speech_${Date.now()}.webm`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                
+                showStatus('💾 آڈیو ڈاؤنلوڈ ہو گئی! | ऑडियो डाउनलोड हो गई!', 'ready');
+            }
         }
-        
-        // Demo API key - Get your free API key from voicerss.org
-        console.log('Get free API key from: http://www.voicerss.org/registration.aspx');
+
+        function showStatus(message, type) {
+            const statusElement = document.getElementById('status');
+            statusElement.textContent = message;
+            statusElement.className = `status ${type}`;
+            statusElement.style.display = 'block';
+        }
+
+        // Initialize
+        showStatus('✅ ٹول تیار ہے | टूल तैयार है', 'ready');
     </script>
 </body>
 </html>
