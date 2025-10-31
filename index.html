@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="ur">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Urdu/Hindi Text to Speech</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .input-section {
+            margin-bottom: 30px;
+        }
+        
+        .input-section h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+        
+        textarea {
+            width: 100%;
+            height: 150px;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 18px;
+            font-family: 'Segoe UI', 'Nafees', 'Jameel Noori Nastaleeq', sans-serif;
+            resize: vertical;
+            transition: border-color 0.3s ease;
+        }
+        
+        textarea:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+        
+        .controls {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        
+        .control-group {
+            margin-bottom: 15px;
+        }
+        
+        .control-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+        
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        input[type="range"] {
+            flex: 1;
+            height: 8px;
+            border-radius: 5px;
+            background: #ddd;
+            outline: none;
+        }
+        
+        .value-display {
+            min-width: 40px;
+            text-align: center;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+        
+        .voice-selector {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+        
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 25px;
+        }
+        
+        button {
+            padding: 15px 25px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .btn-speak {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+        }
+        
+        .btn-stop {
+            background: linear-gradient(135deg, #f44336, #d32f2f);
+            color: white;
+        }
+        
+        .btn-pause {
+            background: linear-gradient(135deg, #ff9800, #f57c00);
+            color: white;
+        }
+        
+        .btn-resume {
+            background: linear-gradient(135deg, #2196F3, #1976D2);
+            color: white;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .language-info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            border-left: 5px solid #2196F3;
+        }
+        
+        .language-info h4 {
+            color: #1976D2;
+            margin-bottom: 10px;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 20px;
+            background: #f8f9fa;
+            color: #666;
+            border-top: 1px solid #e0e0e0;
+        }
+        
+        @media (max-width: 600px) {
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .button-group {
+                grid-template-columns: 1fr;
+            }
+            
+            body {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🗣️ اردو/हिन्दी ٹیکسٹ ٹو اسپیچ</h1>
+            <p>اپنا متن لکھیں اور اسے سنیں | अपना टेक्स्ट लिखें और सुनें</p>
+        </div>
+        
+        <div class="content">
+            <div class="input-section">
+                <h3>📝 اپنا متن یہاں لکھیں | अपना टेक्स्ट यहाँ लिखें:</h3>
+                <textarea id="textInput" placeholder="مثال: السلام علیکم | उदाहरण: नमस्ते..."></textarea>
+            </div>
+            
+            <div class="controls">
+                <div class="control-group">
+                    <label>🎵 آواز کی رفتار | वॉयस स्पीड:</label>
+                    <div class="slider-container">
+                        <input type="range" id="rate" min="0.5" max="2" value="1" step="0.1">
+                        <span class="value-display" id="rateValue">1</span>
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <label>🎤 آواز کی پچ | वॉयस पिच:</label>
+                    <div class="slider-container">
+                        <input type="range" id="pitch" min="0.5" max="2" value="1" step="0.1">
+                        <span class="value-display" id="pitchValue">1</span>
+                    </div>
+                </div>
+                
+                <select id="voiceSelect" class="voice-selector">
+                    <option value="">آواز منتخب کریں | वॉइस चुनें</option>
+                </select>
+            </div>
+            
+            <div class="button-group">
+                <button class="btn-speak" onclick="speakText()">
+                    <span>▶️</span> بولنا | बोलना
+                </button>
+                <button class="btn-stop" onclick="stopSpeech()">
+                    <span>⏹️</span> روکیں | रोकें
+                </button>
+                <button class="btn-pause" onclick="pauseSpeech()">
+                    <span>⏸️</span>暂停 | पॉज
+                </button>
+                <button class="btn-resume" onclick="resumeSpeech()">
+                    <span>⏯️</span> جاری کریں | जारी रखें
+                </button>
+            </div>
+            
+            <div class="language-info">
+                <h4>💡 معلومات | जानकारी:</h4>
+                <p>• یہ ٹول براؤزر کی built-in اسپیچ سسٹم استعمال کرتا ہے</p>
+                <p>• اردو/ہندی آوازیں آپ کے براؤزر اور ڈیوائس پر منحصر ہیں</p>
+                <p>• جدید براؤزرز (Chrome, Edge, Safari) بہتر سپورٹ کرتے ہیں</p>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>🚀 مفت اردو/हिन्दی ٹیکسٹ ٹو اسپیچ ٹول | Free Urdu/Hindi Text to Speech Tool</p>
+        </div>
+    </div>
+
+    <script>
+        let speech = new SpeechSynthesisUtterance();
+        let voices = [];
+        let speechSynth = window.speechSynthesis;
+        
+        // Load available voices
+        function loadVoices() {
+            voices = speechSynth.getVoices();
+            const voiceSelect = document.getElementById('voiceSelect');
+            voiceSelect.innerHTML = '<option value="">آواز منتخب کریں | वॉइस चुनें</option>';
+            
+            // Try to find Urdu/Hindi voices
+            const preferredVoices = voices.filter(voice => 
+                voice.lang.includes('ur') || 
+                voice.lang.includes('hi') || 
+                voice.lang.includes('in') ||
+                voice.name.toLowerCase().includes('urdu') ||
+                voice.name.toLowerCase().includes('hindi') ||
+                voice.name.toLowerCase().includes('india')
+            );
+            
+            // Add preferred voices first
+            preferredVoices.forEach(voice => {
+                const option = document.createElement('option');
+                option.value = voice.name;
+                option.textContent = `${voice.name} (${voice.lang})`;
+                voiceSelect.appendChild(option);
+            });
+            
+            // Add other voices
+            voices.forEach(voice => {
+                if (!preferredVoices.includes(voice)) {
+                    const option = document.createElement('option');
+                    option.value = voice.name;
+                    option.textContent = `${voice.name} (${voice.lang})`;
+                    voiceSelect.appendChild(option);
+                }
+            });
+            
+            // Auto-select first Urdu/Hindi voice if available
+            if (preferredVoices.length > 0) {
+                voiceSelect.value = preferredVoices[0].name;
+                speech.voice = preferredVoices[0];
+            } else if (voices.length > 0) {
+                speech.voice = voices[0];
+            }
+        }
+        
+        // Initialize voices
+        speechSynth.onvoiceschanged = loadVoices;
+        
+        // Voice selection
+        document.getElementById('voiceSelect').addEventListener('change', function() {
+            const selectedVoice = voices.find(voice => voice.name === this.value);
+            if (selectedVoice) {
+                speech.voice = selectedVoice;
+            }
+        });
+        
+        function speakText() {
+            const text = document.getElementById('textInput').value.trim();
+            if (text === '') {
+                alert('📝 براہ کرم متن درج کریں | कृपया टेक्स्ट दर्ज करें');
+                return;
+            }
+            
+            speech.text = text;
+            speech.rate = parseFloat(document.getElementById('rate').value);
+            speech.pitch = parseFloat(document.getElementById('pitch').value);
+            speech.volume = 1;
+            
+            // Try to set Urdu/Hindi language
+            const urduRegex = /[\u0600-\u06FF]/;
+            const hindiRegex = /[\u0900-\u097F]/;
+            
+            if (urduRegex.test(text)) {
+                speech.lang = 'ur-PK';
+            } else if (hindiRegex.test(text)) {
+                speech.lang = 'hi-IN';
+            }
+            
+            speechSynth.speak(speech);
+        }
+        
+        function stopSpeech() {
+            speechSynth.cancel();
+        }
+        
+        function pauseSpeech() {
+            speechSynth.pause();
+        }
+        
+        function resumeSpeech() {
+            speechSynth.resume();
+        }
+        
+        // Update slider values
+        document.getElementById('rate').addEventListener('input', function() {
+            document.getElementById('rateValue').textContent = this.value;
+        });
+        
+        document.getElementById('pitch').addEventListener('input', function() {
+            document.getElementById('pitchValue').textContent = this.value;
+        });
+        
+        // Load voices initially
+        loadVoices();
+    </script>
+</body>
+</html>
